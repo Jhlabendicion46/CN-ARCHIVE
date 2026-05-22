@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CN VAULT | VHS DELUXE</title>
+    <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+    <style>
+        :root {
+            --cn-blue: #005187;
+            --cn-cyan: #009bde;
+            --cn-light-blue: #4facfe;
+            --vhs-white: #eeeeee;
+            --bg-dark: #07141e;
+            --card-bg: #00223e;
+        }
+
+
+        /* --- EFECTO CRT EN LA PANTALLA --- */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.12) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 9999;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+        }
+
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Arial Rounded MT Bold', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--vhs-white);
+            overflow-x: hidden;
+        }
+
+
+        /* --- BANNER DE CABECERA (Carrusel de imágenes original) --- */
+        .banner-container { 
+            width: 100%; height: 160px; 
+            background: #000; position: relative; 
+            overflow: hidden; border-bottom: 3px solid var(--cn-cyan); 
+        }
+        
+        .banner-link { 
+            width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0; 
+            display: none; z-index: 1;
+        }
+
+
+        .banner-link.active { 
+            display: block; z-index: 2;
+            animation: vhs-flicker 0.15s infinite; 
+        }
+
+
+        .banner-img { 
+            width: 100%; height: 100%; 
+            object-fit: cover;
+        }
+
+
+        @keyframes vhs-flicker { 0% { opacity: 0.98; } 50% { opacity: 1; } 100% { opacity: 0.99; } }
+
+
+        /* --- CONTENEDORES PARA REPRODUCCIÓN DE VIDEOS DE RELLENO --- */
+        .vhs-video-filler-box {
+            background: #000000;
+            border: 3px solid var(--cn-cyan);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0, 155, 222, 0.3);
+            position: relative;
+        }
+
+
+        .vhs-video-filler-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+
+        /* Layout para la pestaña de Juegos: Juegos a la izquierda, columna de videos a la derecha */
+        .juegos-layout-with-video {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+
+        .juegos-video-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+
+        .juegos-video-column .vhs-video-filler-box {
+            flex-grow: 1;
+            height: 220px;
+        }
+
+
+        /* --- NAV BAR ESTILO RECUADRO --- */
+        .nav-bar {
+            background: #002c4b;
+            padding: 0 4%;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 4px solid var(--cn-cyan);
+            position: sticky; top: 0; z-index: 1001;
+            height: 70px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+
+        .my-logo { 
+            display: flex;
+            align-items: center;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .my-logo img {
+            max-height: 55px;
+            width: auto;
+            object-fit: contain;
+        }
+
+
+        .nav-links { display: flex; height: 100%; }
+        
+        .nav-btn {
+            background: transparent; border: none; color: #fff;
+            cursor: pointer; font-family: 'Arial Black'; font-size: 1rem;
+            text-transform: uppercase; padding: 0 25px; height: 100%;
+            display: flex; align-items: center; transition: 0.2s;
+            letter-spacing: 1px; font-weight: bold;
+        }
+        .nav-btn:hover, .nav-btn.btn-active { 
+            background: var(--cn-cyan); 
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+
+        /* --- LAYOUT CENTRAL TIPO TV CRT --- */
+        .main-content { max-width: 1400px; margin: 25px auto; padding: 0 20px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        .vhs-tv-layout {
+            display: grid; 
+            grid-template-columns: 2.1fr 0.9fr; 
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+
+        .vhs-main-screen-box {
+            background: #000; 
+            border: 4px solid var(--cn-cyan); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,155,222,0.5);
+        }
+
+
+        .media-vault-container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+
+        .vhs-screen-footer {
+            background: #001f35; padding: 8px 15px; 
+            text-align: center; font-size: 12px; font-weight: bold; 
+            color: #fff; letter-spacing: 2px; border-top: 3px solid var(--cn-cyan);
+            text-transform: uppercase;
+        }
+
+
+        /* Lateral Derecho Estilo Panel */
+        .vhs-right-panel {
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+
+        .panel-header-title {
+            background: #001f35; color: #ffe400; padding: 8px;
+            text-align: center; font-family: 'Arial Black'; font-size: 0.85rem;
+            letter-spacing: 1px; border: 2px solid var(--cn-cyan); text-transform: uppercase;
+        }
+
+
+        .vhs-mini-card {
+            height: 120px; background: #000; 
+            border: 3px solid var(--cn-cyan); border-radius: 6px; 
+            position: relative; cursor: pointer;
+            background-size: cover; background-position: center;
+            transition: 0.2s; overflow: hidden;
+        }
+        .vhs-mini-card:hover { transform: scale(1.02); border-color: #fff; }
+        .vhs-mini-card-title {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.75); color: #fff; font-size: 11px;
+            padding: 4px; text-align: center; font-weight: bold;
+        }
+
+
+        /* Botones de Años tipo OSD */
+        .btn-era-panel {
+            background: #003358; border: 3px solid var(--cn-cyan);
+            color: #fff; padding: 12px; font-family: 'Arial Black';
+            font-size: 0.95rem; text-transform: uppercase; cursor: pointer;
+            border-radius: 6px; text-align: center; transition: 0.2s;
+            letter-spacing: 1px;
+        }
+        .btn-era-panel:hover, .btn-era-panel.sub-active {
+            background: var(--cn-cyan); color: #fff;
+            box-shadow: 0 0 10px var(--cn-cyan);
+        }
+
+
+        /* --- CUADRÍCULA DE JUEGOS Y SERIES OPTIMIZADA --- */
+        .grid-title {
+            font-family: 'Arial Black'; font-size: 1.2rem;
+            color: #fff; margin: 20px 0 15px 0; letter-spacing: 1px;
+            text-transform: uppercase; border-left: 5px solid var(--cn-cyan);
+            padding-left: 10px;
+        }
+
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            gap: 20px; 
+        }
+
+
+        .card { 
+            background: var(--card-bg); 
+            border: 3px solid var(--cn-cyan);
+            border-radius: 8px; transition: 0.25s;
+            cursor: pointer; overflow: hidden;
+            display: flex; flex-direction: column;
+            position: relative;
+            height: 240px; 
+        }
+        .card:hover { border-color: #fff; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,155,222,0.4); }
+
+
+        .card img { 
+            width: 100%;
+            height: 155px;
+            object-fit: cover; 
+            border-bottom: 3px solid var(--cn-cyan);
+            display: block;
+        }
+
+
+        .card-info { 
+            padding: 8px 12px; text-align: center; 
+            font-weight: bold; font-size: 0.8rem; 
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: #fff; line-height: 1.3; flex-grow: 1;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+
+        .era-container { display: none; }
+        .era-container.active { display: block; }
+
+
+        /* --- OVERLAY DE REPRODUCCIÓN FULL PANTALLA --- */
+        .fs-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: black; z-index: 20000; flex-direction: column; }
+        .fs-header { background: #001f35; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 3px solid var(--cn-cyan); align-items: center; }
+        .fs-content { flex-grow: 1; display: flex; overflow: hidden; position: relative; }
+        
+        /* Aceleración por hardware para el área de Ruffle */
+        .player-area { 
+            flex-grow: 1; 
+            background: #000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transform: translateZ(0); 
+        }
+        .sidebar { width: 320px; background: #001322; border-left: 3px solid var(--cn-cyan); overflow-y: auto; padding: 20px; }
+        
+        .cap-item { background: #00223e; color: #fff; padding: 12px; margin-bottom: 10px; cursor: pointer; border: 2px solid var(--cn-cyan); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; text-align: center;}
+        .cap-item:hover { background: var(--cn-cyan); color: #fff; }
+
+
+        .key-hint { position: absolute; bottom: 15px; left: 25px; font-family: 'Arial Black'; font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; }
+        
+        /* Optimización de nitidez para el lienzo interactivo */
+        canvas { 
+            image-rendering: pixelated; 
+            image-rendering: crisp-edges;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="banner-container" id="vhs-carousel" style="display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; width: 100%;">
+    
+    <div class="banner-link active" style="width: 100%;">
+        <img src="ads/banner1.jpg" class="banner-img" style="width: 100%; height: 109%; object-fit: fill; display: block;">
+    </div>
+    
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner2.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block; margin: 0 auto;">
+    </div>
+    
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner3.jpg" class="banner-img" style="width: 100%; height: 160px; object-fit: fill; display: block;">
+    </div>
+    
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner4.png" class="banner-img" style="width: 100%; height: 160px; object-fit: fill; display: block; margin: 0 auto;">
+    </div>
+    
+    <div class="banner-link" style="width: 99%;">
+        <img src="ads/banner5.png" class="banner-img" style="width: 99%; height: 99%; object-fit: fill; display: block;">
+    </div>
+ <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner6.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block;">
+    </div>
+ <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner7.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block;">
+    </div>
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner8.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block;">
+    </div>
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner9.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block;">
+    </div>
+    <div class="banner-link" style="width: 100%;">
+        <img src="ads/banner10.png" class="banner-img" style="width: 100%; height: 100%; object-fit: fill; display: block;">
+    </div>
+
+</div>
+
+    <nav class="nav-bar">
+        <div class="my-logo" onclick="showTab('home')">
+            <img src="logo.png" alt="CN VAULT | VHS DELUXE">
+        </div>
+        <div class="nav-links">
+            <button class="nav-btn btn-active" id="btn-home" onclick="showTab('home')">Inicio</button>
+            <button class="nav-btn" id="btn-series" onclick="showTab('series')">Series</button>
+            <button class="nav-btn" id="btn-juegos" onclick="showTab('juegos')">Juegos Flash</button>
+        </div>
+    </nav>
+
+
+    <main class="main-content">
+
+
+        <section id="home" class="section active">
+            <div class="vhs-tv-layout">
+                <div class="vhs-main-screen-box">
+                    <div class="media-vault-container" id="main-tv-player"></div>
+                    <div class="vhs-screen-footer">TV EMBED SYSTEM — VCR ACTIVE</div>
+                </div>
+
+
+                <div class="vhs-right-panel">
+                    <div class="panel-header-title">Destacados Actualizados</div>
+                    <div class="vhs-mini-card" style="background-image: url('https://game.cartoongames.io/upload/20251011/chowder-rump-a-thump.webp');" onclick="verJuego('Chowder: Rump-A-Thump', 'chowder-rump-a-thump.swf')">
+                        <div class="vhs-mini-card-title">Chowder: Rump-A-Thump</div>
+                    </div>
+                    <div class="vhs-mini-card" style="background-image: url('https://www.play-games.com/files/img/toon-cup-1588057073.jpg');" onclick="verJuego('Copa Toon 2006', 'toon-cup.swf')">
+                        <div class="vhs-mini-card-title">Copa Toon 2006</div>
+                    </div>
+                    <div class="panel-header-title">Acceso VCR Clock</div>
+                </div>
+            </div>
+
+
+            <div class="grid-title">Recomendados Flash Arcade</div>
+            <div class="grid">
+                <div class="card" onclick="verJuego('Regular Show: High Flying Halloween', 'flying-halloween.swf')">
+                    <img src="https://i.ytimg.com/vi/dEyXXRPssco/maxresdefault.jpg">
+                    <div class="card-info">Regular Show: Halloween</div>
+                </div>
+                <div class="card" onclick="verJuego('Clarence Amazing Day Out', 'clarence-s-amazing-day-out.swf')">
+                    <img src="https://static.wikia.nocookie.net/clarence/images/d/d7/Clarence_Amazing_Day_Out_Title.jpg">
+                    <div class="card-info">Clarence Amazing Day Out</div>
+                </div>
+                <div class="card" onclick="verJuego('KND Operation Stat', 'kids-next-door-operation-stat.swf')">
+                    <img src="https://static.wikia.nocookie.net/knd/images/1/1d/KNDOpSTAT.png">
+                    <div class="card-info">KND Operation Stat</div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <section id="series" class="section">
+            <div class="vhs-tv-layout">
+                <div class="vhs-main-screen-box">
+                    <div class="media-vault-container" id="series-preview-box"></div>
+                    <div class="vhs-screen-footer" id="series-footer-text">Selecciona una Época en el Panel</div>
+                </div>
+
+
+                <div class="vhs-right-panel">
+                    <div class="panel-header-title">Clasificación Por Años</div>
+                    <button class="btn-era-panel sub-active" id="btn-era90" onclick="switchEra('era90')">Años 90</button>
+                    <button class="btn-era-panel" id="btn-era00" onclick="switchEra('era00')">Años 2000</button>
+                    <button class="btn-era-panel" id="btn-era10" onclick="switchEra('era10')">Años 2010</button>
+                </div>
+            </div>
+
+
+            <div id="era90" class="era-container active">
+                <div class="grid-title">Catálogo Años 90</div>
+                <div class="grid">
+                    <div class="card" onclick="ver('DEXTER', [{t:'El Rival de Dexter', url:'https://www.dailymotion.com/video/x9i5wyy'}])">
+                <img src="https://static.wikia.nocookie.net/dexterslab/images/8/84/Dexter%27s_Lab.png/revision/latest/scale-to-width-down/1024?cb=20150328230508">
+                <div class="card-info">EL LABORATORIO DE DEXTER</div>
+            </div>
+            <div class="card" onclick="ver('¡QUE HISTORIA TAN MARAVILLOSA!', [
+                {t:'Yuckie Duck: Voy en camino (1995)', url:'https://www.dailymotion.com/video/x11uegk'},
+                {t:'Los Gatos Gordos En: Gatos De-Dastres', url:'https://dai.ly/xa746am'},
+                {t:'El Chico Pizza En: Sin propina (1998)', url:'https://dai.ly/xa746h8'},
+                {t:'Una Suerte De Perlas (1997)', url:'https://dai.ly/xa746o8'},
+                {t:'Malcom Y Melvin (1997)', url:'https://dai.ly/xa7794u'},
+                {t:'La Nueva Sentadilla De Snoot (1997)', url:'https://dai.ly/xa779ny'},
+                {t:'La Zarigüeya Podunk (1996)', url:'https://dai.ly/xa78cwq'},
+                {t:'Capitán Buzz Cheeply (1995)', url:'https://dai.ly/xa77agk'},
+                {t:'El Blues Del Montañés (1996)', url:'https://dai.ly/xa747oc'}])">
+                <img src="https://static.wikia.nocookie.net/doblaje/images/a/ae/WhatACartoonLogo.png/revision/latest?cb=20230310015335&path-prefix=es">
+                <div class="card-info">¡Qué historia tan maravillosa, El Show!</div>
+            </div>
+            <div class="card" onclick="ver('JOHNNY BRAVO', [
+                {t:'El Dia De Los Enamorados (2003)', url:'https://www.dailymotion.com/video/x8wa55q'},
+                {t:'Mis Feldmans, Mis Amigos (1997)', url:'https://www.dailymotion.com/video/x7uqh86'}])">
+                <img src="https://play-lh.googleusercontent.com/phmqe3LNfV7wh-hQDNIj54vFf-4FvXRRTl9v09JmE0oqOnfny9h8iHb0kCWsBzu_gNs">
+                <div class="card-info">Johnny Bravo</div>
+            </div>
+            <div class="card" onclick="ver('ED, EDD Y EDDY', [
+                {t:'Vamor A Refrecarnos (2003)', url:'https://dai.ly/xa7188a'},
+                {t:'Mis Feldmans, Mis Amigos (1997)', url:'https://www.dailymotion.com/video/x7uqh86'}])">
+                <img src="https://static.wikia.nocookie.net/ededdyeddy/images/6/68/Ed%2CEdd_n_Eddy.jpg/revision/latest?cb=20100601222032&path-prefix=es">
+                <div class="card-info">Ed, Edd Y Eddy</div>
+            </div>
+            <div class="card" onclick="ver('LA VACA Y EL POLLITO', [
+                {t:'Excursión a la prisión Folsom (1997)', url:'https://dai.ly/xa73zb0'},
+                {t:'Mis Feldmans, Mis Amigos (1997)', url:'https://www.dailymotion.com/video/x7uqh86'}])">
+                <img src="https://beam-images.warnermediacdn.com/BEAM_LWM_DELIVERABLES/5a357466-18e9-47b7-8d13-e55087a299eb/3652dcc41a8ca74bcc9338c71e222b89f260650a.jpg?host=wbd-images.prod-vod.h264.io&partner=beamcom&w=1024">
+                <div class="card-info">La Vaca Y El Pollito</div>
+            </div>
+            <div class="card" onclick="ver('PINKY Y EL CEREBRO', [
+                {t:'Brainania (1995)', url:'https://www.dailymotion.com/video/x8g5ise'},
+                {t:'Mis Feldmans, Mis Amigos (1997)', url:'https://www.dailymotion.com/video/x7uqh86'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/2364190d686c34208d862a37f2a7c077d62c06ac7c872bcd4fd3c86046935973.jpg">
+                <div class="card-info">Pinky Y El Cerebro</div>
+            </div>
+            <div class="card" onclick="ver('MIKE, LU & OG', [
+                {t:'La Televisión/Locura En Patines (1999)', url:'https://dai.ly/xa7j4hw'}])">
+                <img src="https://i.redd.it/cloboz7mgafe1.png">
+                <div class="card-info">Mike, Lu & Og</div>
+            </div>
+            <div class="card" onclick="ver('CORAJE', [{t:'La Sombra De Coraje', url:'https://www.dailymotion.com/video/xa716we'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/d77dd39c1cafd8ae3a3e5c4a24a9c4ba427f8daee2acd22a0fa481ddef6c7fb0.jpg">
+                <div class="card-info">Coraje, el Perro Cobarde</div>
+            </div>
+                </div>
+            </div>
+
+
+            <div id="era00" class="era-container">
+                <div class="grid-title">Catálogo Años 2000</div>
+                <div class="grid">
+                     <div class="card" onclick="ver('BEN 10', [{t:'Y Fueron 10', url:'https://www.dailymotion.com/video/x8wa55q'}])">
+                <img src="https://occ-0-8407-2219.1.nflxso.net/dnm/api/v6/6AYY37jfdO6hpXcMjf9Yu5cnmO0/AAAABTvAVEsBp66vQ457pOAweqGAQiFATqS_1uQY_re72H4SAdRVAlCxI1mxShcSRHzKZO5Y_lP9agOoca47HPyZ8hwyEWTw8Y3udLJ3WHJQ0A.jpg?r=54a">
+                <div class="card-info">BEN 10</div>
+            </div>
+            <div class="card" onclick="ver('BILLY Y MANDY', [{t:'Escuela De Magia (2003)', url:'https://dai.ly/xa74c8m'}])">
+                <img src="https://i.ytimg.com/vi/AuuITbTTNb0/hq720.jpg">
+                <div class="card-info">Billy y Mandy</div>
+            </div>
+            <div class="card" onclick="ver('LOS JOVENES TITANES', [{t:'Mision Tokio (2006)', url:'https://www.dailymotion.com/video/x9sa81a'}])">
+                <img src="https://www.tvtime.com/_next/image?url=https%3A%2F%2Fartworks.thetvdb.com%2Fbanners%2Ffanart%2Foriginal%2F71503-4.jpg&w=3840&q=75">
+                <div class="card-info">Los Jovenes Titanes</div>
+            </div>
+            <div class="card" onclick="ver('SHEEP EN LA GRAN CIUDAD', [
+                {t:'Tranquiliza Mi Corazón (2000)', url:'https://dai.ly/xa783f6'},
+                {t:'¿Balar o no balar? (2000)', url:'https://dai.ly/xa7j5m6'}])">
+                <img src="https://m.media-amazon.com/images/M/MV5BZTU2NjUwNDQtNGM1Ni00OTUzLTkyNGEtZWMyNjBiNDQxYjc5XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg">
+                <div class="card-info">SHEEP EN LA GRAN CIUDAD</div>
+            </div>
+            <div class="card" onclick="ver('SCOOBY-DOO!', [
+                {t:'La Maldición De Cleopatra (2005)', url:'https://www.dailymotion.com/video/x8nzdiz'},
+                {t:'El Monstruo De México (2003)', url:'https://www.dailymotion.com/video/x8o26qu'},
+                {t:'La leyenda del vampiro (2003)', url:'https://www.dailymotion.com/video/x8nzd0w'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/d03219ac34d9f0bee84092988c2c14f751fef992a597afcc21c0bee83d591dbc.jpg">
+                <div class="card-info">Scooby-Doo!</div>
+            </div>
+            <div class="card" onclick="ver('KND', [
+                {t:'Sombrías Aventuras de KND (2007)', url:'https://www.dailymotion.com/video/x9u2p9q'},
+                {t:'Operación: C.H.A.D (2003)', url:'https://dai.ly/xa74422'},
+                {t:'Operación: R.E.L.A.T.O (2008)', url:'https://dai.ly/xa74452'}])">
+                <img src="https://www.rublog.cl/wp-content/uploads/2024/04/04knd.jpg">
+                <div class="card-info">KND: Chicos del Barrio</div>
+            </div>
+                </div>
+            </div>
+
+
+            <div id="era10" class="era-container">
+                <div class="grid-title">Catálogo Años 2010</div>
+                <div class="grid">
+                    <div class="card" onclick="ver('UN SHOW MÁS', [{t:'El Poder (2010)', url:'https://dai.ly/xa78clw'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/cf67178fb4f0a9a620ebb4511dc7a73331e2bc9d800627b95b6ad0d4e0b6d2f5.jpg">
+                <div class="card-info">UN SHOW MÁS</div>
+            </div>
+            <div class="card" onclick="ver('HORA DE AVENTURA', [{t:'Pánico En La Fiesta (2010)', url:'https://dai.ly/xa78i5u'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/46081da3b7b6544eed25cf291a8522149ac75233ef66815e84bf52da023eac46.jpg">
+                <div class="card-info">HORA DE AVENTURA</div>
+            </div>
+            <div class="card" onclick="ver('CLARENCE', [
+                {t:'Enfrentamiento en el Calabozo (2014)', url:'https://dai.ly/x6zk3g6'},
+                {t:'Un Dia Genial Con Una Chica (2014)', url:'https://dai.ly/x6zk3g5'},
+                {t:'Perdido En El Supermercado (2014)', url:'https://dai.ly/x6yfeeu'}])">
+                <img src="https://i1.sndcdn.com/artworks-000111202766-hkwz5l-t1080x1080.jpg">
+                <div class="card-info">CLARENCE</div>
+            </div>
+            <div class="card" onclick="ver('STEVEN UNIVERSE', [{t:'Brillo de Gema', url:'https://dai.ly/xa78i5u'}])">
+                <img src="https://cdn.iview.abc.net.au/thumbs/1200/zw/ZW4774A_68df9d5b759a8_3600.jpg">
+                <div class="card-info">STEVEN UNIVERSE</div>
+            </div>
+            <div class="card" onclick="ver('MAD', [{t:'Dálmatas / Grey en Anime', url:'https://www.dailymotion.com/video/x12j6h8'}])">
+                <img src="https://m.media-amazon.com/images/S/pv-target-images/695cb12aaaba6e99e39c4466071ed4a92722e885539949538e3e809c7e26e00c.jpg">
+                <div class="card-info">MAD</div>
+            </div>
+            <div class="card" onclick="ver('GUMBALL', [{t:'El Tercero', url:'https://i.blogs.es/e95f58/gumball/650_1200.jpg'}])">
+                <img src="https://i.blogs.es/e95f58/gumball/650_1200.jpg">
+                <div class="card-info">GUMBALL</div>
+            </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <section id="juegos" class="section">
+            <div class="grid-title"></div>
+            
+            <div class="juegos-layout-with-video">
+                <div class="grid">
+                    <div class="card" onclick="verJuego('Ed Edd n Eddy: Candy Factory', 'ed-edd-n-eddy-candy-factory.swf')">
+                    <img src="https://www.numuki.com/game/card/eee-candy-factory-3391.webp">
+                    <div class="card-info">Ed Edd n Eddy: Candy Factory</div>
+                </div>
+
+                    <div class="card" onclick="verJuego('Regular Show: High Flying Holloween', 'flying-halloween.swf')">
+                        <img src="https://i.ytimg.com/vi/dEyXXRPssco/maxresdefault.jpg">
+                        <div class="card-info">Regular Show: High Flying Holloween</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Scooby-Doo in Spooky Speed', 'scooby-doo-in-spooky-speed.swf')">
+                        <img src="https://game.cartoongames.io/upload/20250831/scooby-doo-in-spooky-speed_w300.webp">
+                        <div class="card-info">Scooby-Doo in Spooky Speed</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Chowder: Rump-A-Thump', 'chowder-rump-a-thump.swf')">
+                        <img src="https://game.cartoongames.io/upload/20251011/chowder-rump-a-thump.webp">
+                        <div class="card-info">Chowder: Rump-A-Thump</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Clarence Amazing Day Out', 'clarence-s-amazing-day-out.swf')">
+                        <img src="https://static.wikia.nocookie.net/clarence/images/d/d7/Clarence_Amazing_Day_Out_Title.jpg">
+                        <div class="card-info">Clarence's Amazing Day Out</div>
+                    </div>
+                    <div class="card" onclick="verJuego('KND Operation Stat', 'kids-next-door-operation-stat.swf')">
+                        <img src="https://static.wikia.nocookie.net/knd/images/1/1d/KNDOpSTAT.png">
+                        <div class="card-info">KND Operation Stat</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Samurai Jack: Code', 'samurai-jack-2003.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScSqoRNwAeRDAmyW4HxjFaB9uuNI8h5Wgc3g&s">
+                        <div class="card-info">Samurai Jack: Code</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Blockade Blitz', 'ben-10-blockade-blitz-2007.swf')">
+                        <img src="https://static.wikia.nocookie.net/ben10/images/c/cc/BlockadeBlitzGame.png">
+                        <div class="card-info">Ben 10: Blockade Blitz</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Copa Toon 2006', 'toon-cup.swf')">
+                        <img src="https://images.produ.com/noticias/0701/big-copa-toon-w.gif">
+                        <div class="card-info">Copa Toon 2006 3D</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Copa Toon 2006 3D (BETA)', 'home.swf')">
+                        <img src="https://www.play-games.com/files/img/toon-cup-1588057073.jpg">
+                        <div class="card-info">Copa Toon 2006</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Mundo Cartoon Network (Beta)', 'home (1).swf')">
+                        <img src="https://s3images.coroflot.com/user_files/individual_files/276001_86fRua_JpND4gthpyR1Ex4cBz.png">
+                        <div class="card-info">Mundo Cartoon Network (Beta)</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Cow And Chicken: Red Guy Toonamajig', 'game (3).swf')">
+                        <img src="https://hanna-barberawiki.s3.us-east-va.io.cloud.ovh.us/thumb/4/46/Red_Guy.png/1200px-Red_Guy.png">
+                        <div class="card-info">Cow And Chicken: Red Guy Toonamajig</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Marvelous Misadventures of Flapjack - Adventure Bound', 'flapjack_adventure-bound.swf')">
+                        <img src="https://static.wikia.nocookie.net/flapjack/images/1/1a/Adventure_Bound.png/revision/latest?cb=20180211063241">
+                        <div class="card-info">The Marvelous Misadventures of Flapjack - Adventure Bound</div>
+                    </div>
+                    <div class="card" onclick="verJuego('My Gym Partners A Monkey: Hall of the Wild', 'halYHS.swf')">
+                        <img src="https://i.ytimg.com/vi/jDs1GmGzMuY/maxresdefault.jpg">
+                        <div class="card-info">My Gym Partner's A Monkey: Hall Of The Wild</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Garfields Scary Scavenger Hunt', 'main.swf', 'KHB')">
+                        <img src="https://www.numuki.com/game/card/garfield-s-scary-scavenger-hunt-4107.webp">
+                        <div class="card-info">Garfield's Scary Scavenger Hunt</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Nostrildamu', 'nostrildamus.swf')">
+                        <img src="https://static.wikia.nocookie.net/lasmacabrasaventurasdebillyymandy/images/f/f8/Nostrildamus.png/revision/latest?cb=20141108153816&path-prefix=es">
+                        <div class="card-info">Nostrildamu</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Fosters Home for Imaginary Friends – Outer Space Trace', 'space-trace.swf')">
+                        <img src="https://s1.dmcdn.net/v/9zQ2s1NOnzOIRDQwm/x120">
+                        <div class="card-info">Foster’s Home for Imaginary Friends – Outer Space Trace</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Adventure Time: Lemon Break', 'lemonbreak.swf')">
+                        <img src="https://image.yaksgames.com/v2/game/6/9/6/6963d5fafe8f92260487b7fe3811758f.jpg?w=180">
+                        <div class="card-info">Adventure Time: Lemon Break</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Johnny Bravo In: Bravo Goalie', 'johnnybravo-bravogoalie715x536.swf')">
+                        <img src="https://www.flashgamesplayer.com/online/images/johnny-bravo-in-bravo-goalie.jpg">
+                        <div class="card-info">Johnny Bravo In: Bravo Goalie</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Scooby Doo: Roller Ghoster Ride', 'scooby-doo-roller-ghoster-ride.swf')">
+                        <img src="https://i.ytimg.com/vi/jbI17j3bOIY/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBC2Vwe4IMNLGmNtZk7F56sw2X7Tg">
+                        <div class="card-info">Scooby Doo: Roller Ghoster Ride</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Regular Show: All Nighter', 'regular-show-all-nighter.swf')">
+                        <img src="https://static.wikia.nocookie.net/cartoonnetwork/images/e/e5/Juego_-_USM_All_Nighter.png/revision/latest?cb=20141005020753&path-prefix=es">
+                        <div class="card-info">Regular Show: All Nighter</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Magnet Face', 'magnetfacebillyymandy.swf')">
+                        <img src="https://i.ytimg.com/vi/Jlbz9FiTxMc/maxresdefault.jpg">
+                        <div class="card-info">Magnet Face</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Steven Universe Gem Bound', 'steven-universe-gem-bound.swf')">
+                        <img src="https://i.ytimg.com/vi/cSe0F00QppA/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCULBwdpMfPLvZmINyBTPkAFm9pPg">
+                        <div class="card-info">Steven Universe Gem Bound</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ed, Edd n Eddy: Toy Twister', 'ed-edd-n-eddy-toy-twister.swf')">
+                        <img src="https://i.ytimg.com/vi/wEyzD45Rhlo/maxresdefault.jpg">
+                        <div class="card-info">Ed, Edd n Eddy: Toy Twister</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Hero Hoops', 'erohoopdben10.swf')">
+                        <img src="https://7juegos.es/files/image/8829-ben-10-hero-hoops.jpg">
+                        <div class="card-info">Ben 10: Hero Hoops</div>
+                    </div>
+                    <div class="card" onclick="verJuego('My GYM Partners A Monkey: Lighten Up', 'lightenup.swf')">
+                        <img src="https://static.wikia.nocookie.net/mygympartneramonkey/images/f/f4/Lighten_Up.jpg/revision/latest?cb=20170928015935">
+                        <div class="card-info">My GYM Partner's A Monkey: Lighten Up</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Amazing World of Gumball: Water Sons', 'water-sons-2014.swf')">
+                        <img src="https://7juegos.es/files/image/12715-water-sons.jpg">
+                        <div class="card-info">The Amazing World of Gumball: Water Sons</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Total Drama Paparazzi', 'Insula-Dramei-Totale-Paparazzi.swf')">
+                        <img src="https://static.wikia.nocookie.net/totaldramaisland/images/d/d7/LGF2.png/revision/latest/scale-to-width-down/300?cb=20110213214019&path-prefix=es">
+                        <div class="card-info">Total Drama Paparazzi</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Grim Adventures Of Billy And Mandy - Zap to It', 'zap-to-it-billy-y-mandy.swf')">
+                        <img src="https://static.wikia.nocookie.net/lasmacabrasaventurasdebillyymandy/images/2/2f/Zap_To_it%21.png/revision/latest/scale-to-width-down/250?cb=20240724190628&path-prefix=es">
+                        <div class="card-info">The Grim Adventures Of Billy And Mandy - Zap to It</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Adventure Time: Jake Tough Break', 'jake-break.swf')">
+                        <img src="https://files.gameshero.com/game/d4d/e5e/d4de5e554d696005/images/240/adventuretimejakestoughbreak.jpg">
+                        <div class="card-info">Adventure Time: Jake's Tough Break</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Kids Next Door: Numbuh Generator', 'kids-next-door-numbuh-generator.swf')">
+                        <img src="https://i.ytimg.com/vi/1s_505G0aU0/sddefault.jpg">
+                        <div class="card-info">Kids Next Door: Numbuh Generator</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Camp Lazlo: Paintcan Panic', 'paintcan-panic-2005.swf')">
+                        <img src="https://tcrf.net/images/thumb/a/a9/PaintcanPanicTitle.png/320px-PaintcanPanicTitle.png">
+                        <div class="card-info">Camp Lazlo: Paintcan Panic</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Johnny Bravo: Return To Sender', 'Back_to_sender.swf')">
+                        <img src="https://static.wikia.nocookie.net/johnnybravo/images/4/4c/Return_To_Sender.png/revision/latest/scale-to-width-down/1200?cb=20210614031110">
+                        <div class="card-info">TJohnny Bravo: Return To Sender</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Scooby-Doo And The Creepy Castle', 'scooby-doo-and-the-creepy-castle.swf')">
+                        <img src="https://www.play-games.com/files/img/scooby-doo-castle-hassle-1716036304.png">
+                        <div class="card-info">Scooby-Doo And The Creepy Castle</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Blockade Blitz', 'ben-10-blockade-blitz-2007.swf')">
+                        <img src="https://static.wikia.nocookie.net/ben10/images/c/cc/BlockadeBlitzGame.png/revision/latest/scale-to-width-down/1200?cb=20250417092345">
+                        <div class="card-info">Ben 10: Blockade Blitz</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ed, Edd N Eddy Candy Machine Deluxe', 'ed-edd-n-eddy-candy-machine-deluxe.swf')">
+                        <img src="https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSx38aawBJAfG7flKWatVYVPGPsbx6AA5Z0jonhiFK10cr7Qi7s">
+                        <div class="card-info">Ed, Edd N Eddy Candy Machine Deluxe</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Chowder: Web Safety Soufflé', 'chowder-web-safety-souffl.swf')">
+                        <img src="https://game.cartoongames.io/upload/20251124/chowder-web-safety-souffl.webp">
+                        <div class="card-info">Chowder: Web Safety Soufflé</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Batman: The Cobblepot Caper', 'the-batman-the-cobblebot-caper-2005.swf')">
+                        <img src="https://i.ytimg.com/vi/qnYPr6sFMsM/maxresdefault.jpg">
+                        <div class="card-info">The Batman: The Cobblepot Caper</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Cartoon Network: Food Bash', 'food-bash-2002.swf')">
+                        <img src="https://archive.org/serve/food_bash/ruffle_Sc07pNjOCV.png">
+                        <div class="card-info">Cartoon Network: Food Bash</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ed, Edd n Eddy: Spin Stadium', 'ed-edd-n-eddy-spin-stadium-2002.swf')">
+                        <img src="https://static.wikia.nocookie.net/edwikia/images/7/7b/Spinner.png/revision/latest?cb=20140701230026">
+                        <div class="card-info">Ed, Edd n Eddy: Spin Stadium</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Foster’s Home for Imaginary Friends: A Friend in Need', 'a-friend-in-need-2004.swf')">
+                        <img src="https://archive.org/serve/a-friend-in-need/AFriendinNeed.png">
+                        <div class="card-info">Foster’s Home for Imaginary Friends: A Friend in Need</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Amazing World of Gumball: Battle Bowlers', 'battle-bowlers-2015.swf')">
+                        <img src="https://i.ytimg.com/vi/gnGXZg43u9k/maxresdefault.jpg">
+                        <div class="card-info">The Amazing World of Gumball: Battle Bowlers</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Clone a Doodle Doo', 'clone-a-doodle-doo.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA6pbm3WwW2rg7Vl_nbwSbccL7fwMZYpmO6g&s">
+                        <div class="card-info">Clone a Doodle Doo</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Foster’s Home for Imaginary Friends: Coco’s Egg Scramble', 'cocos-egg-scramble-2004.swf')">
+                        <img src="https://game.cartoongames.io/upload/20251031/coco-s-egg-scramble.webp">
+                        <div class="card-info">Foster’s Home for Imaginary Friends: Coco’s Egg Scramble</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Codename: Kids Next Door: Tummy Trouble', 'tummy-trouble-2005.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtxNUiIpyi6sHIIwkHz8XEyjmIIAC-wuC_5w&s">
+                        <div class="card-info">Codename: Kids Next Door: Tummy Trouble</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Scooby-Doo: Ask Swami Shaggy', 'ask-swami-shaggy-2002.swf')">
+                        <img src="https://static.wikia.nocookie.net/scoobydoobydoo/images/f/fb/SwamiShaggy.png/revision/latest/scale-to-width-down/200?cb=20140210150729&path-prefix=es">
+                        <div class="card-info">Scooby-Doo: Ask Swami Shaggy</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Dexter’s Laboratory: Runaway Robot', 'dexters-laboratory-runaway-robot-2002.swf')">
+                        <img src="https://static.wikia.nocookie.net/dexterslab/images/0/04/Dexters_Lab_Runaway_Robot.png/revision/latest?cb=20220614230115">
+                        <div class="card-info">Dexter’s Laboratory: Runaway Robot</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Cartoon Network: Cartoon Cove Mini Golf', 'cartoon-cove-mini-golf-2003.swf')">
+                        <img src="https://i.ytimg.com/vi/ymi8aLBiwno/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLCncHTBk1iadu0FvY4fKyejTWY4qw">
+                        <div class="card-info">Cartoon Network: Cartoon Cove Mini Golf</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Hero Matrix', '')">
+                        <img src="https://static.wikia.nocookie.net/knd/images/d/d4/Out-Mandy%27d%21.jpg/revision/latest/scale-to-width-down/1200?cb=20200204204441">
+                        <div class="card-info">Ben 10: Hero Matrix</div>
+                    </div>
+                    <div class="card" onclick="verJuego('The Amazing World of Gumball: Blind Fooled', 'blind-fooled-2012.swf')">
+                        <img src="https://tcrf.net/images/thumb/6/65/TAWoG-BF-title.png/320px-TAWoG-BF-title.png">
+                        <div class="card-info">The Amazing World of Gumball: Blind Fooled</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Cartoon Network: SnowBrawl Fight!Share', 'snowbrawl-fight-2013.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5xExObUJ3YsJ93etPyJMpZwwbt43OF3s4vg&s">
+                        <div class="card-info">Cartoon Network: SnowBrawl Fight!Share</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Steven Universe Goat Guardian', 'steven-universe-goat-guardian.swf')">
+        <img src="https://static.wikia.nocookie.net/steven-universe/images/5/5c/GoatGuardian.PNG/revision/latest?cb=20140414020236">
+        <div class="card-info">Steven Universe Goat Guardian</div>
+    </div>
+
+    <div class="card" onclick="verJuego('Scooby Doo: Snack Machine', 'scooby-doo-snack-machine.swf')">
+        <img src="https://i.ytimg.com/vi/CleiZkF0T3U/mqdefault.jpg">
+        <div class="card-info">Scooby Doo: Snack Machine</div>
+    </div>
+                    <div class="card" onclick="verJuego('The Powerpuff Girls: Attack of the Puppybots', 'attack-of-the-puppybots-2007.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnsUdXG401S4U-CU0E-6OHy4JkbtfnZKUuTQ&s">
+                        <div class="card-info">The Powerpuff Girls: Attack of the Puppybots</div>
+                    </div>
+                    <div class="card" onclick="verJuego('KND Rainbow Monkey Rundown', 'kids-next-door-rainbow-monkey-rundown.swf')">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzniW6neOpNkkw7DwsteXr2oLK9AI9eS6dmw&s">
+                        <div class="card-info">Kids Next Door: Rainbow Monkey Rundown</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Sky Streaker Gumball', 'Gumball-Sky-Streaker_1426602867.swf')">
+        <img src="https://img.toongo.io/g/911/thumb_en_68bbfbb2529c2.webp">
+        <div class="card-info">Sky Streaker Gumball</div>
+    </div>
+
+    <div class="card" onclick="verJuego('The Eds, Launchbox', 'eddeddlunv32Th.swf')">
+        <img src="https://game.cartoongames.io/upload/20250803/the-eds-launchbox.webp">
+        <div class="card-info">The Eds' Launchbox</div>
+    </div>
+                    <div class="card" onclick="verJuego('The Marvelous Misadventures of Flapjack: Thrills and Chills', 'chillsgame.swf')">
+                    <img src="https://i.ytimg.com/vi/Id6yl7RPhM4/mqdefault.jpg">
+                    <div class="card-info">The Marvelous Misadventures of Flapjack: Thrills and Chills</div>
+                </div>
+                <div class="card" onclick="verJuego('The Flintstones: Bedrock Bowling', 'the-flintstones-bedrock-bowling.swf')">
+                    <img src="https://i.pinimg.com/736x/08/a3/3e/08a33e4e0b6319890a09f3120e57f68c.jpg">
+                    <div class="card-info">The Flintstones: Bedrock Bowling</div>
+                </div>
+                <div class="card" onclick="verJuego('Scooby-Doo: Theatre Terror', 'scooby-doo-theatre-terror.swf')">
+                    <img src="https://static.wikia.nocookie.net/scoobydoo/images/3/30/Theatre_Terror_title_card.jpeg/revision/latest?cb=20220811121440">
+                    <div class="card-info">Scooby-Doo: Theatre Terror</div>
+                </div>
+                <div class="card" onclick="verJuego('The Grim Adventures of Billy and Mandy: Grims DownFall', 'CN_GrimsDownFall.swf')">
+                    <img src="https://static.wikia.nocookie.net/grimadventures/images/0/01/Girl%27s_DownFall.jpg/revision/latest/scale-to-width-down/1200?cb=20180903205354">
+                    <div class="card-info">The Grim Adventures of Billy and Mandy: Grims DownFall</div>
+                </div>
+                <div class="card" onclick="verJuego('The Powerpuff Girls: Target Slammin Action', 'PPF_Target_Slammin_Action_hack.swf')">
+        <img src="https://game.cartoongames.io/upload/20251204/the-powerpuff-girls-target-slammin-action.webp">
+        <div class="card-info">The Powerpuff Girls: Target Slammin' Action</div>
+    </div>
+
+
+    <div class="card" onclick="verJuego('Scooby Doo Big Air', 'scooby-doo-big-air.swf')">
+        <img src="https://archive.org/download/scooby-doo-big-air_flash/screenshot_00.png">
+        <div class="card-info">Scooby Doo Big Air</div>
+    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Power Splash', 'ben-10-power-splash-2008.swf')">
+                        <img src="https://7juegos.es/files/image/412-ben-10-power-splash.jpg">
+                        <div class="card-info">Ben 10: Power Splash4</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Ben 10: Critical Impact', 'ben-10-critical-impact-2006.swf')">
+                        <img src="https://static.wikia.nocookie.net/ben10/images/0/09/CriticalImpactGame.png/revision/latest/scale-to-width-down/1200?cb=20250417092437">
+                        <div class="card-info">Ben 10: Critical Impact</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Fosters Home for Imaginary Friends: Big Shot Checkers', 'big-shot-checkers-2006.swf')">
+                    <img src="https://archive.org/serve/big-shot-checkers/Checkers.png">
+                    <div class="card-info">Foster's Home for Imaginary Friends: Big Shot Checkers</div>
+                </div>
+
+    <div class="card" onclick="verJuego('Total Drama: Total Pandamonium', 'total-pandamonium.swf')">
+        <img src="https://files.gameshero.com/game/16a/ae5/16aae5d2271ce940/images/240/totalpandamonium.jpg">
+        <div class="card-info">Total Drama: Total Pandamonium</div>
+    </div>
+                </div>
+
+
+                <div class="juegos-video-column" style="width: 120px;">
+   <div class="juegos-video-column">
+    <div class="vhs-video-filler-box" style="width: 280px; height: 270px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio1.jpg" alt="Anuncio Local 1" style="width:100%; height:100%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 280px; height: 350px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio2.jpg" alt="Anuncio Local 2" style="width:100%; height:100%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 303px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio4.jpg" alt="Anuncio Local 3" style="width:100%; height:99%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 250px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio3.jpg" alt="Anuncio Local 2" style="width:100%; height:100%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 250px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio5.jpg" alt="Anuncio Local 3" style="width: 100%; height:99%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 250px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio6.jpg" alt="Anuncio Local 2" style="width:100%; height:100%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 250px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio7.jpg" alt="Anuncio Local 3" style="width: 100%; height:99%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 306px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio8.jpg" alt="Anuncio Local 3" style="width:100%; height:99%; object-fit:cover; display:block;">
+    </div>
+    <div class="vhs-video-filler-box" style="width: 250px; height: 229px; aspect-ratio: 1/1; margin-bottom: 10px;">
+        <img src="ads/anuncio9.jpg" alt="Anuncio Local 3" style="width: 100%; height:99%; object-fit:cover; display:block;">
+    </div>
+</div>
+            </div>
+        </section>
+
+
+    </main>
+
+
+    <div id="fs-overlay" class="fs-overlay">
+        <div class="fs-header">
+            <h2 id="fs-title" style="margin:0; font-family:'Arial Black'; font-size:1.2rem; letter-spacing:1px; color:#ffe400;">CARGANDO...</h2>
+            <button onclick="closeFull()" style="background:transparent; border:2px solid var(--cn-cyan); color:white; padding:8px 18px; font-weight:bold; cursor:pointer; font-family:'Arial Black'; text-transform:uppercase;">✖ CERRAR</button>
+        </div>
+        <div class="fs-content">
+            <div class="player-area" id="fs-player"></div>
+            <div class="sidebar" id="fs-sidebar" style="display:none;">
+                <h3 style="margin-top:0; font-size:0.9rem; letter-spacing:2px; color:var(--cn-cyan); font-family:'Arial Black';">EPISODIOS DISPONIBLES</h3>
+                <div id="fs-playlist"></div>
+            </div>
+            <div class="key-hint">Presiona 'F' para Fullscreen interactivo</div>
+        </div>
+    </div>
+
+<script>
+        // VARIABLES GLOBALES Y CONTROL DE SECUENCIA CONTINUA
+        let juegoPendiente = { nombre: '', archivo: '' };
+        let reproduciendoTandaJuego = false;
+        
+        // Control de reproducción consecutiva de capítulos locales
+        let episodiosActuales = [];
+        let indiceVideoActual = 0;
+
+        // ----------------------------------------------------
+        // CONFIGURACIÓN DE VIDEOS/AUDIOS LOCALES
+        // ----------------------------------------------------
+        const listaVideosLocalesPreview = [
+            'videos/vota_toon_2004_1.mp4',
+            'videos/18.mp4',
+            'videos/5.mp4',
+            'videos/Coraje_el_perro cobarde_bumper_2004.mp4',
+            'videos/31.mp4',
+            'videos/12.mp4',
+            'videos/billyymandy1.mp4',
+            'videos/24.mp4',
+            'videos/7.mp4',
+            'videos/looney1.mp4',
+            'videos/1.mp4',
+            'videos/36.mp4',
+            'videos/vota_toon3.mp4',
+            'videos/14.mp4',
+            'videos/29.mp4',
+            'videos/KND_1.mp4',
+            'videos/9.mp4',
+            'videos/22.mp4',
+            'videos/foster1.mp4',
+            'videos/33.mp4',
+            'videos/3.mp4',
+            'videos/acme1.mp4',
+            'videos/15.mp4',
+            'videos/27.mp4',
+            'videos/pokemon1.mp4',
+            'videos/vota_toon4.mp4',
+            'videos/amiyumi1.mp4',
+            'videos/toonix2.mp4',
+            'videos/37.mp4',
+            'videos/toonix1.mp4',
+            'videos/amiyumi2.mp4',
+            'videos/KND_2.mp4',
+            'videos/vota_toon2.mp4',
+            'videos/38.mp4',
+            'videos/copatoon1.mp4',
+            'videos/ronaldinho.mp4',
+            'videos/nba.mp4',
+            'videos/Dexter_bumper_2004.mp4',
+            'videos/copatoon2.mp4',
+            'videos/39.mp4',
+            'videos/tevez.mp4',
+            'videos/copatoon3.mp4',
+            'videos/vota_toon5.mp4',
+            'videos/batman.mp4',
+            'videos/b1.mp4',
+            'videos/20.mp4',
+            'videos/11.mp4',
+            'videos/b2.mp4',
+            'videos/8.mp4',
+            'videos/25.mp4',
+            'videos/b3.mp4',
+            'videos/34.mp4',
+            'videos/13.mp4',
+            'videos/b4.mp4',
+            'videos/6.mp4',
+            'videos/19.mp4',
+            'videos/b5.mp4',
+            'videos/2.mp4',
+            'videos/30.mp4',
+            'videos/b6.mp4',
+            'videos/23.mp4',
+            'videos/16.mp4',
+            'videos/b7.mp4',
+            'videos/10.mp4',
+            'videos/32.mp4',
+            'videos/b8.mp4',
+            'videos/4.mp4',
+            'videos/21.mp4',
+            'videos/b9.mp4',
+            'videos/28.mp4',
+            'videos/35.mp4',
+            'videos/b10.mp4',
+            'videos/17.mp4',
+            'videos/26.mp4',
+        ];
+
+        const listaBumpersLocales = [
+            
+        ];
+
+        // 1. PREVIEW EN LA PESTAÑA SERIES (Con audio habilitado correctamente)
+        function cargarVideoAleatorioSeries() {
+            const previewBox = document.getElementById('series-preview-box');
+            if (!previewBox || listaVideosLocalesPreview.length === 0) return;
+            const videoAzar = listaVideosLocalesPreview[Math.floor(Math.random() * listaVideosLocalesPreview.length)];
+            
+            previewBox.innerHTML = ''; 
+            
+            const videoEl = document.createElement('video');
+            videoEl.src = videoAzar;
+            videoEl.autoplay = true;
+            
+            videoEl.loop = false;  
+            videoEl.removeAttribute('loop');
+            
+            videoEl.playsInline = true;
+            videoEl.setAttribute('type', 'video/mp4');
+            
+            videoEl.style.width = "100%";
+            videoEl.style.height = "100%";
+            videoEl.style.objectFit = "cover"; 
+            videoEl.style.display = "block";
+
+            videoEl.muted = true; 
+            
+            videoEl.onended = function() {
+                cargarVideoAleatorioSeries();
+            };
+
+            videoEl.onerror = function() {
+                console.log("Error en preview local. Saltando al siguiente...");
+                cargarVideoAleatorioSeries();
+            };
+            
+            previewBox.appendChild(videoEl);
+
+            videoEl.play().then(() => {
+                videoEl.muted = false; 
+            }).catch(() => {
+                console.log("Audio retenido por políticas de autoplay.");
+            });
+
+            const activarAudioPreview = () => {
+                if (videoEl) {
+                    videoEl.muted = false;
+                    if (videoEl.paused) {
+                        videoEl.play().catch(e => console.log(e));
+                    }
+                }
+                document.removeEventListener('click', activarAudioPreview);
+            };
+            document.addEventListener('click', activarAudioPreview);
+        }
+
+        function mostrarEstaticaPreview(contenedor) {
+            contenedor.innerHTML = `
+                <div style="
+                    width: 100%; 
+                    height: 100%; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    background: repeating-linear-gradient(0deg, #111, #111 2px, #222 2px, #222 4px);
+                    color: var(--cn-cyan); 
+                    font-family: monospace; 
+                    font-size: 1.1rem;
+                    text-shadow: 2px 2px #000;
+                    letter-spacing: 1px;
+                ">
+                    ⚠️ PREVIEW NO DISPONIBLE
+                </div>
+            `;
+        }
+
+        function inicializarTvSWF() {
+            const playerArea = document.getElementById('main-tv-player');
+            if (!playerArea) return;
+            playerArea.innerHTML = ''; 
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            player.style.width = "100%"; player.style.height = "100%";
+            playerArea.appendChild(player);
+            player.load({ 
+                url: 'tv_index.swf', 
+                allowScriptAccess: true, 
+                backgroundColor: "#000000", 
+                scale: 'showAll', 
+                quality: 'high',
+                letterbox: 'on',
+                wmode: 'opaque'
+            });
+        }
+
+        function apagarTvSWF() {
+            const playerArea = document.getElementById('main-tv-player');
+            if (playerArea) { playerArea.innerHTML = ''; }
+        }
+
+        function showTab(tabId) {
+            document.getElementById('fs-player').innerHTML = '';
+            document.getElementById('fs-overlay').style.display = 'none';
+            reproduciendoTandaJuego = false;
+
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) targetSection.classList.add('active');
+
+            document.getElementById('btn-home').classList.remove('btn-active');
+            document.getElementById('btn-series').classList.remove('btn-active');
+            document.getElementById('btn-juegos').classList.remove('btn-active');
+            
+            const previewBox = document.getElementById('series-preview-box');
+            if (previewBox) previewBox.innerHTML = '';
+
+            if (tabId === 'home') {
+                document.getElementById('btn-home').classList.add('btn-active');
+                inicializarTvSWF(); 
+            } else {
+                apagarTvSWF(); 
+            }
+
+            if (tabId === 'series') {
+                document.getElementById('btn-series').classList.add('btn-active');
+                cargarVideoAleatorioSeries(); 
+            }
+            if (tabId === 'juegos') {
+                document.getElementById('btn-juegos').classList.add('btn-active');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.body.focus();
+        }
+
+        function switchEra(eraId) {
+            const containers = document.querySelectorAll('.era-container');
+            containers.forEach(c => c.classList.remove('active'));
+            document.getElementById(eraId).classList.add('active');
+
+            document.getElementById('btn-era90').classList.remove('sub-active');
+            document.getElementById('btn-era00').classList.remove('sub-active');
+            document.getElementById('btn-era10').classList.remove('sub-active');
+
+            if (eraId === 'era90') document.getElementById('btn-era90').classList.add('sub-active');
+            if (eraId === 'era00') document.getElementById('btn-era00').classList.add('sub-active');
+            if (eraId === 'era10') document.getElementById('btn-era10').classList.add('sub-active');
+            document.body.focus();
+        }
+
+        // CONTROL DE REPRODUCCIÓN DE SERIES
+        function ver(titulo, episodios) {
+            reproduciendoTandaJuego = false;
+            const overlay = document.getElementById('fs-overlay');
+            const titleEl = document.getElementById('fs-title');
+            const playlistEl = document.getElementById('fs-playlist');
+            const sidebarEl = document.getElementById('fs-sidebar');
+            const playerArea = document.getElementById('fs-player');
+
+            titleEl.innerText = titulo; playlistEl.innerHTML = ''; playerArea.innerHTML = ''; 
+            episodiosActuales = episodios || [];
+
+            const previewBox = document.getElementById('series-preview-box');
+            if (previewBox) previewBox.innerHTML = '';
+
+            if (episodiosActuales.length > 0) {
+                sidebarEl.style.display = 'block';
+                episodiosActuales.forEach((ep, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'cap-item'; item.innerText = ep.t;
+                    item.onclick = () => {
+                        indiceVideoActual = index;
+                        cargarVideoLocalSerie(ep.url); 
+                    };
+                    playlistEl.appendChild(item);
+                    if (index === 0) {
+                        indiceVideoActual = 0;
+                        cargarVideoLocalSerie(ep.url);
+                    }
+                });
+            } else { sidebarEl.style.display = 'none'; }
+            overlay.style.display = 'flex';
+            document.body.focus();
+        }
+
+        // REPRODUCTOR AUTO-ADAPTATIVO CON SEGUIMIENTO DE FOCO
+        function cargarVideoLocalSerie(rutaVideo) {
+            const playerArea = document.getElementById('fs-player');
+            playerArea.innerHTML = ''; 
+
+            const contenedorEstable = document.createElement('div');
+            contenedorEstable.id = "media-stable-container"; 
+            contenedorEstable.style.width = "100%";
+            contenedorEstable.style.maxWidth = "800px";
+            contenedorEstable.style.display = "flex";
+            contenedorEstable.style.justifyContent = "center";
+            contenedorEstable.style.alignItems = "center";
+            contenedorEstable.style.backgroundColor = "#000000";
+            
+            if (rutaVideo.includes('dailymotion.com') || rutaVideo.includes('dai.ly')) {
+                let idVideo = rutaVideo.replace(/\/$/, "").split('/').pop().split('?')[0];
+                
+                const iframeDm = document.createElement('iframe');
+                iframeDm.id = "dm-player-iframe";
+                iframeDm.src = `https://www.dailymotion.com/embed/video/${idVideo}?autoplay=1`;
+                iframeDm.setAttribute('allow', 'autoplay; fullscreen');
+                iframeDm.setAttribute('allowfullscreen', 'true');
+                iframeDm.setAttribute('frameborder', '0');
+                
+                iframeDm.style.width = "100%";
+                iframeDm.style.aspectRatio = "4/3";
+                iframeDm.style.maxHeight = "80vh";
+                iframeDm.style.border = "3px solid var(--cn-cyan)";
+                iframeDm.style.display = "block";
+                
+                contenedorEstable.appendChild(iframeDm);
+                playerArea.appendChild(contenedorEstable);
+            } else {
+                const videoLocal = document.createElement('video');
+                videoLocal.src = rutaVideo;
+                videoLocal.autoplay = true;
+                videoLocal.controls = true;
+                videoLocal.muted = true; 
+                
+                videoLocal.style.width = "100%";
+                videoLocal.style.height = "auto"; 
+                videoLocal.style.maxHeight = "80vh"; 
+                videoLocal.style.objectFit = "contain"; 
+                videoLocal.style.border = "3px solid var(--cn-cyan)";
+                videoLocal.style.display = "block";
+
+                videoLocal.loop = false;
+                videoLocal.removeAttribute('loop');
+
+                videoLocal.onended = function() {
+                    pasarSiguienteCapitulo();
+                };
+
+                videoLocal.onerror = function() {
+                    pasarSiguienteCapitulo();
+                };
+
+                contenedorEstable.appendChild(videoLocal);
+                playerArea.appendChild(contenedorEstable);
+
+                videoLocal.play().catch(err => {
+                    console.log("Autoplay diferido:", err);
+                });
+            }
+            
+            setTimeout(() => { window.focus(); document.body.focus(); }, 150);
+        }
+
+        function pasarSiguienteCapitulo() {
+            indiceVideoActual++;
+            if (indiceVideoActual < episodiosActuales.length) {
+                cargarVideoLocalSerie(episodiosActuales[indiceVideoActual].url);
+            } else if (listaBumpersLocales.length > 0) {
+                const bumperAzar = listaBumpersLocales[Math.floor(Math.random() * listaBumpersLocales.length)];
+                cargarVideoLocalSerie(bumperAzar);
+            } else {
+                const playerArea = document.getElementById('fs-player');
+                playerArea.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; width:100%; maxWidth:800px; height:300px; color:var(--cn-cyan); font-family:monospace; font-size:1.5rem; text-shadow: 2px 2px #000;">FIN DE LA TRANSMISIÓN</div>`;
+            }
+        }
+
+        // JUEGOS
+        function verJuego(titulo, swfFile) {
+            juegoPendiente.nombre = titulo;
+            juegoPendiente.archivo = swfFile;
+            reproduciendoTandaJuego = false;
+
+            const overlay = document.getElementById('fs-overlay');
+            document.getElementById('fs-sidebar').style.display = 'none';
+
+            overlay.style.display = 'flex';
+            ejecutarRuffleJuego(); 
+        }
+
+        function ejecutarRuffleJuego() {
+            const titleEl = document.getElementById('fs-title');
+            const playerArea = document.getElementById('fs-player');
+            
+            titleEl.innerText = juegoPendiente.nombre;
+            playerArea.innerHTML = ''; 
+
+            const ruffle = window.RufflePlayer.newest();
+            const player = ruffle.createPlayer();
+            player.style.width = "100%";
+            player.style.maxWidth = "800px";
+            player.style.aspectRatio = "4/3"; 
+            player.style.border = "3px solid var(--cn-cyan)";
+            playerArea.appendChild(player);
+
+            player.load({
+                url: juegoPendiente.archivo,
+                allowScriptAccess: true,
+                backgroundColor: "#000000",
+                scale: 'showAll',
+                quality: 'high',
+                letterbox: 'on',
+                wmode: 'opaque'
+            });
+            setTimeout(() => { window.focus(); document.body.focus(); }, 150);
+        }
+
+        function closeFull() {
+            reproduciendoTandaJuego = false;
+            document.getElementById('fs-overlay').style.display = 'none';
+            document.getElementById('fs-player').innerHTML = ''; 
+            
+            const activeSection = document.querySelector('.section.active');
+            if (activeSection && activeSection.id === 'series') {
+                cargarVideoAleatorioSeries();
+            }
+            window.focus();
+            document.body.focus();
+        }
+
+        // CAROUSEL DE PUBLICIDAD
+        setInterval(() => {
+            const carousel = document.getElementById('vhs-carousel');
+            if (!carousel) return;
+            const items = carousel.querySelectorAll('.banner-link');
+            let activeIndex = -1;
+            items.forEach((item, idx) => {
+                if (item.classList.contains('active')) activeIndex = idx;
+            });
+            if (activeIndex !== -1) {
+                items[activeIndex].classList.remove('active');
+                let nextIndex = (activeIndex + 1) % items.length;
+                items[nextIndex].classList.add('active');
+            }
+        }, 6000);
+
+        // INICIALIZADOR PROTEGIDO ESTILO YOUTUBE (SOLUCIÓN DE FOCO PARA DAILYMOTION)
+        window.addEventListener('DOMContentLoaded', () => {
+            inicializarTvSWF();
+
+            // Interceptamos de forma absoluta la tecla F usando la fase de captura (true)
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'f') {
+                    const ruffleElement = document.querySelector('#fs-player ruffle-player');
+                    
+                    if (ruffleElement) {
+                        if (!document.fullscreenElement) {
+                            ruffleElement.requestFullscreen().catch(err => console.log(err));
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    } else {
+                        const videoLocal = document.querySelector('#fs-player video');
+                        const iframeDm = document.getElementById('dm-player-iframe');
+
+                        if (!document.fullscreenElement) {
+                            // IGUAL QUE YOUTUBE: Mandamos el reproductor nativo directamente a pantalla completa
+                            if (videoLocal) {
+                                videoLocal.requestFullscreen().catch(err => console.log("Error Fullscreen Video:", err));
+                            } else if (iframeDm) {
+                                iframeDm.requestFullscreen().catch(err => console.log("Error Fullscreen Iframe:", err));
+                            }
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    }
+                }
+            }, true); 
+
+            // Sistema redundante de recuperación de foco continuo
+            document.addEventListener('click', () => {
+                const overlay = document.getElementById('fs-overlay');
+                if (overlay && overlay.style.display === 'flex') {
+                    // Si haces clic para pausar o activar audio en Dailymotion, devolvemos el foco a tu ventana principal
+                    setTimeout(() => { window.focus(); document.body.focus(); }, 150);
+                }
+            });
+
+            const playerBox = document.getElementById('fs-player');
+            if (playerBox) {
+                // Si el usuario mueve el cursor fuera del contenedor, el teclado se repara instantáneamente
+                playerBox.addEventListener('mouseleave', () => {
+                    if (!document.fullscreenElement) {
+                        window.focus();
+                        document.body.focus();
+                    }
+                });
+            }
+        });
+</script>
+</body>
+</html>
