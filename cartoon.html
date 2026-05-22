@@ -1066,7 +1066,7 @@
             player.style.width = "100%"; player.style.height = "100%";
             playerArea.appendChild(player);
 
-            // CORRECCIÓN DE RUTA: Forza a Ruffle a leer el archivo usando una URL web absoluta real
+            // CORRECCIÓN DE RUTA: Convierte 'tv_index.swf' en una URL web absoluta real para internet
             const swfUrlAbsoluta = new URL('tv_index.swf', window.location.href).href;
 
             player.load({ 
@@ -1079,7 +1079,7 @@
                 wmode: 'opaque'
             });
 
-            // Mantiene el teclado alerta tras montar Ruffle en el Home
+            // Reclama el teclado automáticamente al cargar el Home
             setTimeout(() => { window.focus(); document.body.focus(); }, 150);
         }
 
@@ -1111,9 +1111,32 @@
             } else {
                 apagarTvSWF(); 
             }
+
+            if (tabId === 'series') {
+                document.getElementById('btn-series').classList.add('btn-active');
+                cargarVideoAleatorioSeries(); 
+            }
+            if (tabId === 'juegos') {
+                document.getElementById('btn-juegos').classList.add('btn-active');
+            }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.body.focus(); // Reclama el teclado al cambiar de pestaña
+            document.body.focus(); // Reclama el foco del teclado al cambiar de pestaña
+        }
+
+        function switchEra(eraId) {
+            const containers = document.querySelectorAll('.era-container');
+            containers.forEach(c => c.classList.remove('active'));
+            document.getElementById(eraId).classList.add('active');
+
+            document.getElementById('btn-era90').classList.remove('sub-active');
+            document.getElementById('btn-era00').classList.remove('sub-active');
+            document.getElementById('btn-era10').classList.remove('sub-active');
+
+            if (eraId === 'era90') document.getElementById('btn-era90').classList.add('sub-active');
+            if (eraId === 'era00') document.getElementById('btn-era00').classList.add('sub-active');
+            if (eraId === 'era10') document.getElementById('btn-era10').classList.add('sub-active');
+            document.body.focus();
         }
 
             if (tabId === 'series') {
@@ -1125,7 +1148,6 @@
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.body.focus();
-        }
 
         function switchEra(eraId) {
             const containers = document.querySelectorAll('.era-container');
