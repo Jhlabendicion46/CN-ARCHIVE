@@ -595,12 +595,12 @@
                         <div class="card-info">Ben 10: Blockade Blitz</div>
                     </div>
                     <div class="card" onclick="verJuego('Copa Toon 2006', 'toon-cup.swf')">
-                        <img src="https://images.produ.com/noticias/0701/big-copa-toon-w.gif">
-                        <div class="card-info">Copa Toon 2006 3D</div>
-                    </div>
-                    <div class="card" onclick="verJuego('Copa Toon 2006 3D (BETA)', 'home.swf')">
                         <img src="https://www.play-games.com/files/img/toon-cup-1588057073.jpg">
                         <div class="card-info">Copa Toon 2006</div>
+                    </div>
+                    <div class="card" onclick="verJuego('Copa Toon 2006 3D (BETA)', 'home.swf')">
+                        <img src="https://images.produ.com/noticias/0701/big-copa-toon-w.gif">
+                        <div class="card-info">Copa Toon 2006 3D (BETA)</div>
                     </div>
                     <div class="card" onclick="verJuego('Mundo Cartoon Network (Beta)', 'home (1).swf')">
                         <img src="https://s3images.coroflot.com/user_files/individual_files/276001_86fRua_JpND4gthpyR1Ex4cBz.png">
@@ -1071,7 +1071,6 @@
 
             player.load({ 
                 url: swfUrlAbsoluta, 
-                autoplay: 'on', // <--- CONFIGURACIÓN AGREGADA: Fuerza el inicio automático del SWF
                 allowScriptAccess: true, 
                 backgroundColor: "#000000", 
                 scale: 'showAll', 
@@ -1124,6 +1123,31 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             document.body.focus(); // Reclama el foco del teclado al cambiar de pestaña
         }
+
+        function switchEra(eraId) {
+            const containers = document.querySelectorAll('.era-container');
+            containers.forEach(c => c.classList.remove('active'));
+            document.getElementById(eraId).classList.add('active');
+
+            document.getElementById('btn-era90').classList.remove('sub-active');
+            document.getElementById('btn-era00').classList.remove('sub-active');
+            document.getElementById('btn-era10').classList.remove('sub-active');
+
+            if (eraId === 'era90') document.getElementById('btn-era90').classList.add('sub-active');
+            if (eraId === 'era00') document.getElementById('btn-era00').classList.add('sub-active');
+            if (eraId === 'era10') document.getElementById('btn-era10').classList.add('sub-active');
+            document.body.focus();
+        }
+
+            if (tabId === 'series') {
+                document.getElementById('btn-series').classList.add('btn-active');
+                cargarVideoAleatorioSeries(); 
+            }
+            if (tabId === 'juegos') {
+                document.getElementById('btn-juegos').classList.add('btn-active');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.body.focus(); 
 
         function switchEra(eraId) {
             const containers = document.querySelectorAll('.era-container');
