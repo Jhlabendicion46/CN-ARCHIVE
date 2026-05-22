@@ -1139,31 +1139,6 @@
             document.body.focus();
         }
 
-            if (tabId === 'series') {
-                document.getElementById('btn-series').classList.add('btn-active');
-                cargarVideoAleatorioSeries(); 
-            }
-            if (tabId === 'juegos') {
-                document.getElementById('btn-juegos').classList.add('btn-active');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.body.focus();
-
-        function switchEra(eraId) {
-            const containers = document.querySelectorAll('.era-container');
-            containers.forEach(c => c.classList.remove('active'));
-            document.getElementById(eraId).classList.add('active');
-
-            document.getElementById('btn-era90').classList.remove('sub-active');
-            document.getElementById('btn-era00').classList.remove('sub-active');
-            document.getElementById('btn-era10').classList.remove('sub-active');
-
-            if (eraId === 'era90') document.getElementById('btn-era90').classList.add('sub-active');
-            if (eraId === 'era00') document.getElementById('btn-era00').classList.add('sub-active');
-            if (eraId === 'era10') document.getElementById('btn-era10').classList.add('sub-active');
-            document.body.focus();
-        }
-
         // CONTROL DE REPRODUCCIÓN DE SERIES
         function ver(titulo, episodios) {
             reproduciendoTandaJuego = false;
