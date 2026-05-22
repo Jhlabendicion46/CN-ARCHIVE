@@ -1065,8 +1065,12 @@
             const player = ruffle.createPlayer();
             player.style.width = "100%"; player.style.height = "100%";
             playerArea.appendChild(player);
+
+            // CORRECCIÓN DE RUTA: Forza a Ruffle a leer el archivo usando una URL web absoluta real
+            const swfUrlAbsoluta = new URL('tv_index.swf', window.location.href).href;
+
             player.load({ 
-                url: 'tv_index.swf', 
+                url: swfUrlAbsoluta, 
                 allowScriptAccess: true, 
                 backgroundColor: "#000000", 
                 scale: 'showAll', 
@@ -1074,6 +1078,9 @@
                 letterbox: 'on',
                 wmode: 'opaque'
             });
+
+            // Mantiene el teclado alerta tras montar Ruffle en el Home
+            setTimeout(() => { window.focus(); document.body.focus(); }, 150);
         }
 
         function apagarTvSWF() {
@@ -1104,6 +1111,10 @@
             } else {
                 apagarTvSWF(); 
             }
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.body.focus(); // Reclama el teclado al cambiar de pestaña
+        }
 
             if (tabId === 'series') {
                 document.getElementById('btn-series').classList.add('btn-active');
