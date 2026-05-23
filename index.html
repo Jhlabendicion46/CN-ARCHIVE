@@ -895,11 +895,9 @@
         let juegoPendiente = { nombre: '', archivo: '' };
         let reproduciendoTandaJuego = false;
         
-        
         let episodiosActuales = [];
         let indiceVideoActual = 0;
 
-        
         const listaVideosLocalesPreview = [
             'videos/vota_toon_2004_1.mp4',
             'videos/18.mp4',
@@ -981,7 +979,6 @@
             
         ];
 
-       
         function cargarVideoAleatorioSeries() {
             const previewBox = document.getElementById('series-preview-box');
             if (!previewBox || listaVideosLocalesPreview.length === 0) return;
@@ -1069,6 +1066,7 @@
 
             player.load({ 
                 url: swfUrlAbsoluta, 
+                autoplay: 'on', // CORRECCIÓN: Inicia automáticamente tv_index.swf
                 allowScriptAccess: true, 
                 backgroundColor: "#000000", 
                 scale: 'showAll', 
@@ -1077,7 +1075,6 @@
                 wmode: 'opaque'
             });
 
-           
             setTimeout(() => { window.focus(); document.body.focus(); }, 150);
         }
 
@@ -1119,33 +1116,8 @@
             }
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            document.body.focus(); // Reclama el foco del teclado al cambiar de pestaña
-        }
-
-        function switchEra(eraId) {
-            const containers = document.querySelectorAll('.era-container');
-            containers.forEach(c => c.classList.remove('active'));
-            document.getElementById(eraId).classList.add('active');
-
-            document.getElementById('btn-era90').classList.remove('sub-active');
-            document.getElementById('btn-era00').classList.remove('sub-active');
-            document.getElementById('btn-era10').classList.remove('sub-active');
-
-            if (eraId === 'era90') document.getElementById('btn-era90').classList.add('sub-active');
-            if (eraId === 'era00') document.getElementById('btn-era00').classList.add('sub-active');
-            if (eraId === 'era10') document.getElementById('btn-era10').classList.add('sub-active');
-            document.body.focus();
-        }
-
-            if (tabId === 'series') {
-                document.getElementById('btn-series').classList.add('btn-active');
-                cargarVideoAleatorioSeries(); 
-            }
-            if (tabId === 'juegos') {
-                document.getElementById('btn-juegos').classList.add('btn-active');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
             document.body.focus(); 
+        }
 
         function switchEra(eraId) {
             const containers = document.querySelectorAll('.era-container');
@@ -1331,27 +1303,43 @@
             document.body.focus();
         }
 
-        // CAROUSEL DE PUBLICIDAD
-        setInterval(() => {
-            const carousel = document.getElementById('vhs-carousel');
-            if (!carousel) return;
-            const items = carousel.querySelectorAll('.banner-link');
-            let activeIndex = -1;
-            items.forEach((item, idx) => {
-                if (item.classList.contains('active')) activeIndex = idx;
-            });
-            if (activeIndex !== -1) {
-                items[activeIndex].classList.remove('active');
-                let nextIndex = (activeIndex + 1) % items.length;
-                items[nextIndex].classList.add('active');
-            }
-        }, 6000);
+        // FUNCION DEL CARRUSEL DINÁMICO (Cambia de banner aleatoriamente a los 10 segundos)
+        function iniciarCarruselAleatorio() {
+            setTimeout(() => {
+                const carousel = document.getElementById('vhs-carousel');
+                if (carousel) {
+                    const items = carousel.querySelectorAll('.banner-link');
+                    let activeIndex = -1;
+                    
+                    items.forEach((item, idx) => {
+                        if (item.classList.contains('active')) activeIndex = idx;
+                    });
+                    
+                    if (activeIndex !== -1 && items.length > 1) {
+                        items[activeIndex].classList.remove('active');
+                        
+                        // Selecciona un índice totalmente al azar diferente al actual
+                        let nextIndex;
+                        do {
+                            nextIndex = Math.floor(Math.random() * items.length);
+                        } while (nextIndex === activeIndex);
+                        
+                        items[nextIndex].classList.add('active');
+                    }
+                }
+                // Vuelve a llamarse recursivamente manteniendo el bucle cada 10 segundos exactos
+                iniciarCarruselAleatorio();
+            }, 10000); 
+        }
 
-        // INICIALIZADOR PROTEGIDO ESTILO YOUTUBE (SOLUCIÓN DE FOCO PARA DAILYMOTION)
+        // INICIALIZADOR PROTEGIDO ESTILO YOUTUBE
         window.addEventListener('DOMContentLoaded', () => {
             inicializarTvSWF();
+            
+            // Lanza el bucle del carrusel de forma segura tras cargar el DOM
+            iniciarCarruselAleatorio();
 
-            // Interceptamos de forma absoluta la tecla F usando la fase de captura (true)
+            // Interceptamos la tecla F usando la fase de captura (true)
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 'f') {
                     const ruffleElement = document.querySelector('#fs-player ruffle-player');
@@ -1367,7 +1355,6 @@
                         const iframeDm = document.getElementById('dm-player-iframe');
 
                         if (!document.fullscreenElement) {
-                            // IGUAL QUE YOUTUBE: Mandamos el reproductor nativo directamente a pantalla completa
                             if (videoLocal) {
                                 videoLocal.requestFullscreen().catch(err => console.log("Error Fullscreen Video:", err));
                             } else if (iframeDm) {
@@ -1380,18 +1367,16 @@
                 }
             }, true); 
 
-            // Sistema redundante de recuperación de foco continuo
+            // Sistema de recuperación de foco continuo
             document.addEventListener('click', () => {
                 const overlay = document.getElementById('fs-overlay');
                 if (overlay && overlay.style.display === 'flex') {
-                    // Si haces clic para pausar o activar audio en Dailymotion, devolvemos el foco a tu ventana principal
                     setTimeout(() => { window.focus(); document.body.focus(); }, 150);
                 }
             });
 
             const playerBox = document.getElementById('fs-player');
             if (playerBox) {
-                // Si el usuario mueve el cursor fuera del contenedor, el teclado se repara instantáneamente
                 playerBox.addEventListener('mouseleave', () => {
                     if (!document.fullscreenElement) {
                         window.focus();
