@@ -595,7 +595,7 @@
                         <div class="card-info">Ben 10: Blockade Blitz</div>
                     </div>
                     <div class="card" onclick="verJuego('Copa Toon 2006', 'toon-cup.swf')">
-                        <img src="https://www.play-games.com/files/img/toon-cup-1588057073.jpg">
+                        <img src="https://www.play-games.com/files/img/toon-cup-1588057073.jpg ">
                         <div class="card-info">Copa Toon 2006</div>
                     </div>
                     <div class="card" onclick="verJuego('Copa Toon 2006 3D (BETA)', 'home.swf')">
@@ -605,7 +605,7 @@
                     <div class="card" onclick="verJuego('Mundo Cartoon Network (Beta)', 'home (1).swf')">
                         <img src="https://s3images.coroflot.com/user_files/individual_files/276001_86fRua_JpND4gthpyR1Ex4cBz.png">
                         <div class="card-info">Mundo Cartoon Network (Beta)</div>
-                    </div>
+                    </div> 
                     <div class="card" onclick="verJuego('Cow And Chicken: Red Guy Toonamajig', 'game (3).swf')">
                         <img src="https://hanna-barberawiki.s3.us-east-va.io.cloud.ovh.us/thumb/4/46/Red_Guy.png/1200px-Red_Guy.png">
                         <div class="card-info">Cow And Chicken: Red Guy Toonamajig</div>
@@ -895,13 +895,11 @@
         let juegoPendiente = { nombre: '', archivo: '' };
         let reproduciendoTandaJuego = false;
         
-        // Control de reproducción consecutiva de capítulos locales
+        
         let episodiosActuales = [];
         let indiceVideoActual = 0;
 
-        // ----------------------------------------------------
-        // CONFIGURACIÓN DE VIDEOS/AUDIOS LOCALES
-        // ----------------------------------------------------
+        
         const listaVideosLocalesPreview = [
             'videos/vota_toon_2004_1.mp4',
             'videos/18.mp4',
@@ -983,7 +981,7 @@
             
         ];
 
-        // 1. PREVIEW EN LA PESTAÑA SERIES (Con audio habilitado correctamente)
+       
         function cargarVideoAleatorioSeries() {
             const previewBox = document.getElementById('series-preview-box');
             if (!previewBox || listaVideosLocalesPreview.length === 0) return;
@@ -1079,7 +1077,7 @@
                 wmode: 'opaque'
             });
 
-            // Reclama el teclado automáticamente al cargar el Home
+           
             setTimeout(() => { window.focus(); document.body.focus(); }, 150);
         }
 
